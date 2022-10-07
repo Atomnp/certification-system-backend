@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - /var/www/static:/app/static
+      - /var/database/locus_certification_system:/app/db
+    environment:
+      PRODUCTION: 'false'

@@ -7,9 +7,9 @@ RUN pip install -r requirements.txt
 ENV PYTHONUNBUFFERED=1
 # COPY ./myproject /app
 RUN mkdir /app
-COPY ./certification_system/ /app/
+COPY . /app/
 
-WORKDIR /app
+WORKDIR /app/certification_system
 
 COPY ./entrypoint.sh /
 ENTRYPOINT ["sh", "/entrypoint.sh"]
