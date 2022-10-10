@@ -3,6 +3,10 @@
 1. Clone the repo
 2. Run `docker compose -f docker-compose.dev.yml up --build`
 
+NOTE: on windows you need to change the line ending from CRLF to LF this can be done in vscode by selecting from the bottom right side.
+
+About CRLF: https://stackoverflow.com/a/1552775/11594030
+
 ## Run in Production mode
 
 Copy directory named `data` in the project root to the server
