@@ -2,7 +2,7 @@ from django.db import models
 from category.models import Category
 from event.models import Event
 import uuid
-from certification_system.utils.images import get_file_path
+from utils.images import get_file_path
 
 # Create your models here.
 class Certificate(models.Model):

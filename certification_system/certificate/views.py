@@ -13,7 +13,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from certificate.serializers import CertificateSerializer
 from PIL import Image
-from certification_system.utils.images import save_temporary_image, delete_temporary_image
+from utils.images import save_temporary_image, delete_temporary_image
 
 
 def generate_certificate_dummy(template, data, mappings):
