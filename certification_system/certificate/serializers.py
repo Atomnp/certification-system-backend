@@ -1,10 +1,10 @@
-# serializers for event
+# serializers for certificate
 from rest_framework import serializers
-from .models import Event
+from .models import Certificate
 
-class EventSerializer(serializers.ModelSerializer):
+class CertificateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Event
+        model = Certificate
         # read only attributes
         read_only_fields = ('created_at', 'updated_at')
         fields = '__all__'

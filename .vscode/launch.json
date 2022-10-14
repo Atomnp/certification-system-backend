@@ -11,7 +11,8 @@
       "program": "${workspaceFolder}/certification_system/manage.py",
       "args": ["runserver"],
       "django": true,
-      "justMyCode": true
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}/certification_system"
     }
   ]
 }
