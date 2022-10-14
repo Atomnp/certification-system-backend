@@ -16,10 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include,path
 from rest_framework import routers
-from event import views
+from event.views import EventViewSet
+from category.views import CategoryViewSet
 
 router = routers.DefaultRouter()
-router.register(r'events', views.EventViewSet)
+router.register(r'events', EventViewSet)
+router.register(r'categories', CategoryViewSet)
 # router.register(r'groups', views.GroupViewSet)
 
 
