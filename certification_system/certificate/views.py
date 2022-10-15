@@ -1,35 +1,16 @@
-import uuid
 from certificate.models import Certificate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import csv
 import io
-from io import BytesIO
-from django.core.files.base import ContentFile
+import json
 
 # Create your views here.
 from rest_framework import viewsets
 from rest_framework import permissions
 from certificate.serializers import CertificateSerializer
-from PIL import Image
-from utils.images import save_temporary_image, delete_temporary_image
-
-
-def generate_certificate_dummy(template, data, mappings):
-    """
-    Generate certificate from template and data
-    """
-    file_path = save_temporary_image(template)
-    image = Image.open(file_path)
-    delete_temporary_image(file_path)
-    image = image.convert("L")
-    f = BytesIO()
-    try:
-        image.save(f, format="png")
-        return ContentFile(f.getvalue(), name=uuid.uuid4().hex + ".png")
-    finally:
-        f.close()
+from utils.text_injection import generate_certificate
 
 
 class CertificateViewSet(viewsets.ModelViewSet):
@@ -43,7 +24,7 @@ class BulkCertificateGenerator(APIView):
     def post(self, request, format=None):
         template_image = request.FILES["template_image"]
         csv_file = request.FILES["csv_file"]
-        mapping = request.data["mapping"]
+        mapping = json.loads(request.data["mapping"])
 
         file = csv_file.read().decode("utf-8")
         reader = csv.DictReader(io.StringIO(file))
@@ -55,7 +36,7 @@ class BulkCertificateGenerator(APIView):
                 "active": True,
                 "category": request.data["category"],
                 "event": request.data["event"],
-                "image": generate_certificate_dummy(template_image, person, mapping),
+                "image": generate_certificate(template_image, person, mapping),
             }
 
             certificate = CertificateSerializer(data=data)
