@@ -1,8 +1,12 @@
-FROM python:3.9.7-alpine
+FROM python:3.8-slim-buster
 
 RUN pip install --upgrade pip
 
 COPY ./requirements.txt .
+
+# This installs dependencies needed for opencv
+RUN apt-get update -y && apt-get install ffmpeg libsm6 libxext6  -y
+
 RUN pip install -r requirements.txt
 ENV PYTHONUNBUFFERED=1
 # COPY ./myproject /app
