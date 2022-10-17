@@ -2,26 +2,28 @@
 # it also takes signature as image and add it at paticular position of image (certificate_template)
 
 
-from distutils.sysconfig import PREFIX
+
 import pytesseract
 from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy
-from utils.images import save_temporary_image, delete_temporary_image
+from images import save_temporary_image, delete_temporary_image
 from io import BytesIO
 from django.core.files.base import ContentFile
 import uuid
 
-TEXT_PREFIX = "XXTXT"
-IMAGE_PREFIX = "XXIMG"
+TEXT_PREFIX = "xxtxtone"
+IMAGE_PREFIX = "xximg"
 PREFIXES = [TEXT_PREFIX, IMAGE_PREFIX]
 
 # Might be useful for Windows User
 # vist this link to download :  https://github.com/UB-Mannheim/tesseract/wiki
 # and add path file
 
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
-def extract_placeholders(img: Image) -> dict:
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
+
+
+def extract_placeholders(img: Image,alignment="center") -> dict:
     """Returns the placeholders present in the certificate template along with their position and lenth per character in pixels
 
     Args:
@@ -40,12 +42,18 @@ def extract_placeholders(img: Image) -> dict:
         word = d["text"][i]
         if any([prefix in word for prefix in PREFIXES]):
             (x, y, w, h) = (d["left"][i], d["top"][i], d["width"][i], d["height"][i])
-            placeholders[word] = (
-                x + (w // 2),
-                y,
-                w // len(word),
-            )  # midpoint of top left and top right and length per character of the placeholder text
-
+            if(alignment == "center"):
+                placeholders[word] = (
+                    x + (w // 2),
+                    y,
+                    w // len(word),
+                )  # midpoint of top left and top right and length per character of the placeholder text
+            else:
+                placeholders[word] =(
+                    x,
+                    y,
+                    0,
+                )
     return placeholders
 
 
@@ -107,7 +115,7 @@ def add_text_in_image(
     d = ImageDraw.Draw(img)
     font = ImageFont.truetype(font, font_size)
 
-    # calculating position where the name should start (half character of name is on left side and half on right side of center point)
+    # calculating position where name should start (half character of name is on left side and half on right side of center point)
     text_pos_x = mid_x - (len(text) * len_per_car) // 2
     text_pos = (text_pos_x, mid_y)
     d.text(text_pos, text, fill=text_color, font=font)
@@ -162,10 +170,10 @@ def generate_certificate(template, data, mappings):
 
 if __name__ == "__main__":
 
-    img = Image.open("utils/cert.png")
-    placeholders = extract_placeholders(img)
+    img = Image.open("cert.png")
+    placeholders = extract_placeholders(img) #added alignment parameter default is alignment = "center".
     img = remove_text_from_image(img, placeholders.keys())
-    img = add_text_in_image(img, "XXTXTONE", placeholders["XXTXTONE"])
-    img.save("utils/temporary.png")
+    img = add_text_in_image(img, "Rameshwor prashad lamichhane", placeholders[TEXT_PREFIX])
+    img.save("temporary.png")
 
     print(placeholders)
