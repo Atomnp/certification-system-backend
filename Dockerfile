@@ -6,6 +6,7 @@ COPY ./requirements.txt .
 
 # This installs dependencies needed for opencv
 RUN apt-get update -y && apt-get install ffmpeg libsm6 libxext6  -y
+RUN apt-get install tesseract-ocr -y
 
 RUN pip install -r requirements.txt
 ENV PYTHONUNBUFFERED=1
