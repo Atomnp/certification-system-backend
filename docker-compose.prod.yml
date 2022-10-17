@@ -2,7 +2,7 @@ version: '3'
 
 services:
   app:
-    image: atomics42/certification_system-app:latest
+    image: atomics42/certification_system-app:master
     volumes:
       - /var/database/locus_certification_system:/app/db
       - /var/www/static:/app/static
