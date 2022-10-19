@@ -12,15 +12,15 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 import uuid
 
-TEXT_PREFIX = "xxtxtone"
-IMAGE_PREFIX = "xximg"
+TEXT_PREFIX = "xxx"
+IMAGE_PREFIX = "yyy"
 PREFIXES = [TEXT_PREFIX, IMAGE_PREFIX]
 
 # Might be useful for Windows User
 # vist this link to download :  https://github.com/UB-Mannheim/tesseract/wiki
 # and add path file
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
 
 
 def extract_placeholders(img: Image) -> dict:
@@ -39,33 +39,34 @@ def extract_placeholders(img: Image) -> dict:
     box_length = len(d["level"])
     placeholders = {}
     for i in range(box_length):
-        word = d["text"][i]
-        if any([prefix in word for prefix in PREFIXES]):
+        word = d["text"][i].lower()
+        if any([prefix.lower() in word for prefix in PREFIXES]):
             (x, y, w, h) = (d["left"][i], d["top"][i], d["width"][i], d["height"][i])
             placeholders[word] = (
-                    x,
-                    y,
-                    w,
-                    w // len(word),
-                )
-            
+                x,
+                y,
+                w,
+                w // len(word),
+            )
+
     return placeholders
 
-def calculate_insert_position(text_pos,text,alignment="center"):
-    (top_left_x, top_left_y,width, len_per_car) = text_pos
 
-    mid_x = top_left_x + width//2
+def calculate_insert_position(text_pos, text, alignment="center"):
+    (top_left_x, top_left_y, width, len_per_car) = text_pos
 
-    if (alignment == "center"):
+    mid_x = top_left_x + width // 2
+
+    if alignment == "center":
         # calculating position where name should start (half character of name is on left side and half on right side of center point)
         text_pos_x = mid_x - (len(text) * len_per_car) // 2
 
-        return (text_pos_x,top_left_y)
+        return (text_pos_x, top_left_y)
 
     if alignment == "left":
 
-        return (top_left_x,top_left_y)
-        
+        return (top_left_x, top_left_y)
+
 
 def remove_text_from_image(pil_image, words_to_remove):
     """Removes the text from the image
@@ -82,7 +83,7 @@ def remove_text_from_image(pil_image, words_to_remove):
     image = cv2.cvtColor(numpy.array(pil_image), cv2.COLOR_RGB2BGR)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     inverted_thresh = 255 - thresh
     dilate = cv2.dilate(inverted_thresh, kernel, iterations=4)
 
@@ -120,13 +121,11 @@ def add_text_in_image(
     Returns:
         Image: image with text added
     """
-    
+
     img = img.convert("RGB")
     d = ImageDraw.Draw(img)
     font = ImageFont.truetype(font, font_size)
 
-    
-    
     d.text(text_pos, text, fill=text_color, font=font)
 
     return img
@@ -150,7 +149,7 @@ def add_signature_in_image(main_img, signature_img, signature_pos):
 
 
 # added another parameter 'placeholders'
-def generate_certificate(image,person,map_dict,placeholders):
+def generate_certificate(image, person, mapping, placeholders):
     """Takes templates,data and mapping  and generates certificate
 
     Args:
@@ -162,11 +161,19 @@ def generate_certificate(image,person,map_dict,placeholders):
     Returns:
         ContentFile: This object is used to save the image in the database
     """
-    
-    for key,value in map_dict.items():
-        text_pos = calculate_insert_position(placeholders[value['placeholder']],person[key],value['alignment'])
-        image = add_text_in_image(image,person[key],text_pos)
-    
+
+    for m in mapping:
+        text_pos = calculate_insert_position(
+            placeholders[m.placeholder], person[m.csv_column], m.alignment
+        )
+        image = add_text_in_image(
+            img=image,
+            text=person[m.csv_column],
+            text_pos=text_pos,
+            font_size=int(m.font_size),
+            # text_color=m.color,
+            # font=m.font_size,
+        )
 
     f = BytesIO()
     try:
@@ -176,28 +183,16 @@ def generate_certificate(image,person,map_dict,placeholders):
         f.close()
 
 
-    
-    
-
-
-         
-        
-        
-            
-    
-    
-    
-
 if __name__ == "__main__":
     pass
     # img = Image.open("cert.png")
-    # placeholders = extract_placeholders(img) 
+    # placeholders = extract_placeholders(img)
     # img = remove_text_from_image(img, placeholders.keys())
 
     # name = "Rameshwor prashad lamichhane"
 
     # text_pos = calculate_insert_position(placeholders[TEXT_PREFIX],name,alignment="center")
-    
+
     # img = add_text_in_image(img, "Rameshwor prashad lamichhane", text_pos)
     # img.save("temporary.png")
 
