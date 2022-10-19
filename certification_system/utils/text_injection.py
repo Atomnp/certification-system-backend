@@ -2,12 +2,12 @@
 # it also takes signature as image and add it at paticular position of image (certificate_template)
 
 
-
+# import pandas as pd
 import pytesseract
 from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy
-from images import save_temporary_image, delete_temporary_image
+from utils.images import save_temporary_image, delete_temporary_image
 from io import BytesIO
 from django.core.files.base import ContentFile
 import uuid
@@ -149,25 +149,24 @@ def add_signature_in_image(main_img, signature_img, signature_pos):
     return copy_img
 
 
-def generate_certificate(template, data, mappings):
+# added another parameter 'placeholders'
+def generate_certificate(image,person,map_dict,placeholders):
     """Takes templates,data and mapping  and generates certificate
 
     Args:
         template (_type_): Certificate template
-        data (dict): object containing csv row to insert data into the certificate
+        person(dict): object containing csv row to insert data into the certificate
         mappings (dict): csv column name to template placeholder mapping
+        placeholders :
 
     Returns:
         ContentFile: This object is used to save the image in the database
     """
-    file_path = save_temporary_image(template)
-    image = Image.open(file_path)
-    delete_temporary_image(file_path)
-
-    placeholders = extract_placeholders(image)
-    image = remove_text_from_image(image, placeholders.keys())
-    for key, value in mappings.items():
-        image = add_text_in_image(image, data[value], placeholders[key])
+    
+    for key,value in map_dict.items():
+        text_pos = calculate_insert_position(placeholders[value['placeholder']],person[key],value['alignment'])
+        image = add_text_in_image(image,person[key],text_pos)
+    
 
     f = BytesIO()
     try:
@@ -177,18 +176,31 @@ def generate_certificate(template, data, mappings):
         f.close()
 
 
-if __name__ == "__main__":
-
-    img = Image.open("cert.png")
-    placeholders = extract_placeholders(img) 
-    img = remove_text_from_image(img, placeholders.keys())
-
-    name = "Rameshwor prashad lamichhane"
-
-
-    text_pos = calculate_insert_position(placeholders[TEXT_PREFIX],name,alignment="left")
     
-    img = add_text_in_image(img, "Rameshwor prashad lamichhane", text_pos)
-    img.save("temporary.png")
+    
 
-    print(placeholders)
+
+         
+        
+        
+            
+    
+    
+    
+
+if __name__ == "__main__":
+    pass
+    # img = Image.open("cert.png")
+    # placeholders = extract_placeholders(img) 
+    # img = remove_text_from_image(img, placeholders.keys())
+
+    # name = "Rameshwor prashad lamichhane"
+
+    # text_pos = calculate_insert_position(placeholders[TEXT_PREFIX],name,alignment="center")
+    
+    # img = add_text_in_image(img, "Rameshwor prashad lamichhane", text_pos)
+    # img.save("temporary.png")
+
+    # print(placeholders)
+
+    # generate_test_certificate()

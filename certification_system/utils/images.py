@@ -32,10 +32,9 @@ def save_temporary_image(file_obj):
     with default_storage.open(filename, "wb+") as destination:
         for chunk in file_obj.chunks():
             destination.write(chunk)
-    import os
-
-    print(os.getcwd())
-    return "media/" + filename
+    
+    
+    return "media\\" + filename
 
 
 def delete_temporary_image(filename):
