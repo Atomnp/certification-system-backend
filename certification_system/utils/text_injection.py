@@ -83,7 +83,9 @@ def remove_text_from_image(pil_image, words_to_remove):
     image = cv2.cvtColor(numpy.array(pil_image), cv2.COLOR_RGB2BGR)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    # we can change the kernel size if the text is not getting removed properly
+    # bigger kernel size can help remove text with more space
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
     inverted_thresh = 255 - thresh
     dilate = cv2.dilate(inverted_thresh, kernel, iterations=4)
 
@@ -96,6 +98,11 @@ def remove_text_from_image(pil_image, words_to_remove):
         if data.rstrip().lower() in words_to_remove:
             image[y : y + h, x : x + w] = [255, 255, 255]
 
+    # cv2.imshow("gray", gray)
+    # cv2.imshow("thresh", thresh)
+    # cv2.imshow("dilate", dilate)
+    # cv2.waitKey(0)
+
     # convert image from opencv to pil format
     return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
@@ -106,7 +113,7 @@ def add_text_in_image(
     text_pos,
     font_size=100,
     text_color=(0, 0, 0),
-    font="fonts/OpenSans-Regular.ttf",
+    font="fonts/roboto-mono/RobotoMono-Regular.ttf",
 ):
     """Adds text to the image
 
