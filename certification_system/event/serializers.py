@@ -8,5 +8,4 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         # read only attributes
         read_only_fields = ("created_at", "updated_at")
-        lookup_field = "name"
         fields = "__all__"

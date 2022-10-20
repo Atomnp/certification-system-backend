@@ -10,5 +10,4 @@ from event.serializers import EventSerializer
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by("-end_date")
     serializer_class = EventSerializer
-    lookup_field = "name"
     # permission_classes = [permissions.IsAuthenticated]
