@@ -63,6 +63,7 @@ class BulkCertificateGenerator(APIView):
         placeholders = extract_placeholders(image)
         image = remove_text_from_image(image, placeholders.keys())
 
+        certificates = []
         for person in reader:
             data = {
                 "name": person["name"],
@@ -87,13 +88,11 @@ class BulkCertificateGenerator(APIView):
                     {"error": "Invalid data", "message": str(e)},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            certificate.save()
-
+            cert = certificate.save()
+            certificates.append(
+                CertificateSerializer(cert, context={"request": request}).data
+            )
         return Response(
-            data={
-                "success": True,
-                "message": "Certificates generated successfully",
-                "data": [],
-            },
+            data=certificates,
             status=status.HTTP_201_CREATED,
         )
