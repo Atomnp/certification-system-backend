@@ -28,6 +28,14 @@ class CertificateViewSet(viewsets.ModelViewSet):
     serializer_class = CertificateSerializer
     # permission_classes = [permissions.IsAuthenticated]
 
+    # filter based on category
+    def get_queryset(self):
+        category_id = self.request.query_params.get("category", None)
+        if category_id is not None:
+            return self.queryset.filter(category=category_id)
+        else:
+            return self.queryset
+
 
 # route to generate bulk certificates using template image and csv file from the request
 class BulkCertificateGenerator(APIView):

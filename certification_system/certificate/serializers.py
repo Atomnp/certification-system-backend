@@ -9,6 +9,3 @@ class CertificateSerializer(serializers.ModelSerializer):
         # read only attributes
         read_only_fields = ("created_at", "updated_at")
         fields = "__all__"
-
-
-
