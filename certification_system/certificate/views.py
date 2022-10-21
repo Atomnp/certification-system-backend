@@ -55,9 +55,7 @@ class BulkCertificateGenerator(APIView):
         file = csv_file.read().decode("utf-8")
         reader = csv.DictReader(io.StringIO(file))
 
-        file_path = save_temporary_image(template_image)
-        image = Image.open(file_path)
-        delete_temporary_image(file_path)
+        image = Image.open(template_image)
 
         # extracting placeholders and removing placeholders from image
         placeholders = extract_placeholders(image)
