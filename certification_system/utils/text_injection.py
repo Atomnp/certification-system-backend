@@ -20,10 +20,11 @@ PREFIXES = [TEXT_PREFIX, IMAGE_PREFIX]
 # vist this link to download :  https://github.com/UB-Mannheim/tesseract/wiki
 # and add path file
 
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
 
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
 
-def extract_placeholders(img: Image) -> dict:
+# requires another parameter 'prefixes'(list) text whose position is needed
+def extract_placeholders(img: Image,prefixes) -> dict:
     """Returns the placeholders present in the certificate template along with their position and lenth per character in pixels
 
     Args:
@@ -40,7 +41,7 @@ def extract_placeholders(img: Image) -> dict:
     placeholders = {}
     for i in range(box_length):
         word = d["text"][i].lower()
-        if any([prefix.lower() in word for prefix in PREFIXES]):
+        if any([prefix.lower() in word for prefix in prefixes]):
             (x, y, w, h) = (d["left"][i], d["top"][i], d["width"][i], d["height"][i])
             placeholders[word] = (
                 x,
