@@ -18,7 +18,8 @@ from django.urls import include, path
 from rest_framework import routers
 from event.views import EventViewSet
 from category.views import CategoryViewSet
-from certificate.views import CertificateViewSet, BulkCertificateGenerator
+from certificate.views import CertificateViewSet, BulkCertificateGenerator,TestTemplate
+
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -37,6 +38,11 @@ urlpatterns = [
         "generate-bulk-certificate/",
         BulkCertificateGenerator.as_view(),
         name="generate-bulk-certificate",
+    ),
+    path(
+        "test-template/",
+        TestTemplate.as_view(),
+        name="test-template",
     ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # urlpatterns = [

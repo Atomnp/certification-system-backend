@@ -50,6 +50,8 @@ class BulkCertificateGenerator(APIView):
         )
         mapping = [MappingType(*line.split(",")) for line in lines]
 
+        prefixes = [m[1] for m in mapping]
+
         # converting csv file to dictionary
 
         file = csv_file.read().decode("utf-8")
@@ -58,7 +60,7 @@ class BulkCertificateGenerator(APIView):
         image = Image.open(template_image)
 
         # extracting placeholders and removing placeholders from image
-        placeholders = extract_placeholders(image)
+        placeholders = extract_placeholders(image,prefixes=prefixes)
         image = remove_text_from_image(image, placeholders.keys())
 
         certificates = []
@@ -92,5 +94,30 @@ class BulkCertificateGenerator(APIView):
             )
         return Response(
             data=certificates,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class TestTemplate(APIView):
+    def post(self, request, format=None):
+        template_image = request.FILES["template_image"]
+        mapping_file = request.FILES["mapping"]
+
+        lines = mapping_file.read().decode("utf-8").splitlines()
+        MappingType = namedtuple(
+            "Mapping", "csv_column placeholder alignment font_size"
+        )
+        mapping = [MappingType(*line.split(",")) for line in lines]
+
+        prefixes = [m[1] for m in mapping]
+
+
+        image = Image.open(template_image)
+
+        placeholders = extract_placeholders(image,prefixes=prefixes)
+
+        print(placeholders)
+        return Response(
+            data=placeholders,
             status=status.HTTP_201_CREATED,
         )
