@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     "certificate",
     "authencation",
     "rest_framework_simplejwt.token_blacklist",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [
@@ -84,6 +86,27 @@ DATABASES = {
         "NAME": BASE_DIR / "db" / "db.sqlite3",
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": os.environ.get("POSTGRES_NAME"),
+#         "USER": os.environ.get("POSTGRES_USER"),
+#         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+#         "HOST": "db",
+#         "PORT": 5432,
+#     }
+# }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "postgres",
+#         "USER": "postgres",
+#         "PASSWORD": "",
+#         "HOST": "127.0.0.1",
+#         "PORT": 5432,
+#     }
+# }
 
 
 # Password validation
