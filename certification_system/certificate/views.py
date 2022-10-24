@@ -4,8 +4,11 @@ from rest_framework.response import Response
 from rest_framework import status
 import csv
 import io
-import json
 from collections import namedtuple
+from event.models import Event
+from category.models import Category
+from utils.email import send_bulk_email
+
 
 # Create your views here.
 from rest_framework import viewsets
@@ -14,8 +17,6 @@ from certificate.serializers import CertificateSerializer
 from utils.text_injection import (
     generate_certificate,
     extract_placeholders,
-    save_temporary_image,
-    delete_temporary_image,
     remove_text_from_image,
 )
 
@@ -93,4 +94,44 @@ class BulkCertificateGenerator(APIView):
         return Response(
             data=certificates,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class EmailSenderView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, format=None):
+        """
+        if event id is in the request send mail to all the certificates of that event
+        else if request has category send mail to all the certificates of that category
+        finally is we want to send email for only one certificate the request should contain only certificate id
+        """
+        # send email to each certificate
+        send_all = request.data.get("send_all", False)
+        event_id = request.data.get("event", None)
+        category_id = request.data.get("category", None)
+        certificate_id = request.data.get("certificate", None)
+        # template = request.FILES["template_file"].read().decode("utf-8")
+        # subject = request.data["subject"]
+        certificates = None
+        if event_id:
+            event = Event.objects.get(id=int(event_id))
+            certificates = event.certificates.all()
+        elif category_id:
+            category = Category.objects.get(id=category_id)
+            certificates = category.certificates.all()
+        else:
+            certificate = Certificate.objects.get(pk=certificate_id)
+            certificates = [certificate]
+
+        fail_count, success_count = send_bulk_email(
+            certificates, filter_already_sent=not send_all
+        )
+        return Response(
+            data={
+                "message": f"Emails sent successfully {fail_count} failed, {success_count} success",
+                "falied_count": fail_count,
+                "success_count": success_count,
+            },
+            status=status.HTTP_200_OK,
         )

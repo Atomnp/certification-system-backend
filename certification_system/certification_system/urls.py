@@ -3,7 +3,11 @@ from django.urls import include, path
 from rest_framework import routers
 from event.views import EventViewSet
 from category.views import CategoryViewSet
-from certificate.views import CertificateViewSet, BulkCertificateGenerator
+from certificate.views import (
+    CertificateViewSet,
+    BulkCertificateGenerator,
+    EmailSenderView,
+)
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -31,6 +35,7 @@ urlpatterns = [
         BulkCertificateGenerator.as_view(),
         name="generate-bulk-certificate",
     ),
+    path("send-email/", EmailSenderView.as_view(), name="send-email"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),

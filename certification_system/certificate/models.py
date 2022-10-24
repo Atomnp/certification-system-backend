@@ -9,7 +9,7 @@ class Certificate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     email = models.EmailField()
-    active = models.BooleanField()
+    email_sent = models.BooleanField(default=False)
     category = models.ForeignKey(
         Category, related_name="certificates", on_delete=models.CASCADE
     )
