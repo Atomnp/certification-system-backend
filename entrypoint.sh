@@ -6,9 +6,7 @@ then
 fi
 
 echo "Running make migration"
-python manage.py makemigrations event
-python manage.py makemigrations category
-python manage.py makemigrations certificate
+python manage.py makemigrations event category certificate authencation
 echo "Running migrate"
 python manage.py migrate
 
