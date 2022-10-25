@@ -5,8 +5,6 @@ then
    python manage.py collectstatic --no-input
 fi
 
-echo "Running make migration"
-python manage.py makemigrations
 echo "Running migrate"
 python manage.py migrate
 
