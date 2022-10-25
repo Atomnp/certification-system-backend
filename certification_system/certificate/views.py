@@ -2,6 +2,7 @@ from certificate.models import Certificate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 import csv
 import io
 import json
@@ -51,8 +52,11 @@ class BulkCertificateGenerator(APIView):
         MappingType = namedtuple(
             "Mapping", "csv_column placeholder alignment font_size"
         )
-        mapping = [MappingType(*line.split(",")) for line in lines]
-
+        try:
+            mapping = [MappingType(*line.split(",")) for line in lines]
+        except Exception:
+            raise ValidationError("could not read mapping file")
+        
         prefixes = [m[1] for m in mapping]
         
         # converting csv file to dictionary
@@ -119,13 +123,10 @@ class TestTemplate(APIView):
         image = Image.open(template_image)
 
         placeholders = extract_placeholders(image,prefixes=prefixes)
-        remove
+
         print(placeholders)
         return Response(
             data=placeholders,
             status=status.HTTP_201_CREATED,
         )
-
-        
-
-        
+      
