@@ -6,6 +6,7 @@ services:
     volumes:
       - /var/database/locus_certification_system:/app/certification_system/db
       - /var/www/static:/app/static
+      - /var/media/locus_certification_system:/app/certification_system/media
     environment:
       - PRODUCTION=true
       - SECRET_KEY=YOUR_KEY
