@@ -4,7 +4,7 @@ services:
   app:
     image: atomics42/certification_system-app:master
     volumes:
-      - /var/database/locus_certification_system:/app/db
+      - /var/database/locus_certification_system:/app/certification_system/db
       - /var/www/static:/app/static
     environment:
       - PRODUCTION=true
