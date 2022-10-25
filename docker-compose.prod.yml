@@ -7,11 +7,11 @@ services:
       - /var/database/locus_certification_system:/app/db
       - /var/www/static:/app/static
     environment:
-      - PRODUCTION='true'
-      - SECRET_KEY='YOUR_KEY'
-      - EMAIL_HOST_USER='YOUR_EMAIL'
-      - EMAIL_HOST_PASSWORD='YOUR_PASSWORD'
-      
+      - PRODUCTION=true
+      - SECRET_KEY=YOUR_KEY
+      - EMAIL_HOST_USER=YOUR_EMAIL
+      - EMAIL_HOST_PASSWORD=YOUR_PASSWORD
+
     
   nginx:
     image: nginx:1.23-alpine

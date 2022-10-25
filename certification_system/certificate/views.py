@@ -98,8 +98,6 @@ class BulkCertificateGenerator(APIView):
 
 
 class EmailSenderView(APIView):
-    permission_classes = [permissions.AllowAny]
-
     def post(self, request, format=None):
         """
         if event id is in the request send mail to all the certificates of that event

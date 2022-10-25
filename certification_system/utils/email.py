@@ -11,19 +11,26 @@ https://towardsdatascience.com/automate-sending-emails-with-gmail-in-python-449c
 """
 
 
+def get_certificate_name(path_from_media_root):
+    return path_from_media_root.split("/")[-1].split(".")[0]
+
+
 def send_bulk_email(
     certificates, filter_already_sent, subject="Your certificate is ready"
 ):
+
     fail_count = 0
     success_count = 0
     for certificate in certificates:
+        certificate_id = get_certificate_name(certificate.image.name)
+        print("certificate_id", certificate_id)
         html_message = render_to_string(
             "email.html",
             {
                 "name": certificate.name,
                 "event": certificate.event.name,
                 "category": certificate.category.name,
-                "link": f"{settings.VERIFICATION_BASE_URL}{certificate.image.name}",
+                "link": f"{settings.VERIFICATION_BASE_URL}{certificate_id}",
             },
         )
         if not certificate.email_sent or not filter_already_sent:

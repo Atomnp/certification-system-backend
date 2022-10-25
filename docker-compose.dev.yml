@@ -6,4 +6,8 @@ services:
     volumes:
       - .:/app
     environment:
-      PRODUCTION: 'false'
+      - PRODUCTION=false
+      - SECRET_KEY=YOUR_KEY
+      - EMAIL_HOST_USER=YOUR_EMAIL
+      - EMAIL_HOST_PASSWORD=YOUR_PASSWORD
+      
