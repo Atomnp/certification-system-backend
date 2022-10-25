@@ -158,7 +158,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Manual additions
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+PRODUCTION = os.environ.get("PRODUCTION", "false") == "True"
+DEBUG = not PRODUCTION
 
 CORS_ORIGIN_ALLOW_ALL = True
 ALLOWED_HOSTS = ["*"]
@@ -193,6 +194,8 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-print(EMAIL_HOST_PASSWORD, EMAIL_HOST_USER)
 EMAIL_USE_TLS = True
 VERIFICATION_BASE_URL = "https://locus.com.np/verify/?id="
+
+# CSRF trusted origin
+CSRF_TRUSTED_ORIGINS = ["https://*.locus.com.np", "http://localhost:3000"]
