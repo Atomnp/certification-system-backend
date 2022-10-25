@@ -22,9 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-hk#rs6+=ymd$4biyom%e9@jw+t6bhpb@qwtji-wk=5&loivo+c"
-
 
 # Application definition
 
@@ -161,6 +158,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 PRODUCTION = os.environ.get("PRODUCTION", "false") == "True"
 DEBUG = not PRODUCTION
 
+# SECURITY WARNING: keep the secret key used in production secret!
+if PRODUCTION:
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+else:
+    SECRET_KEY = "django-insecure-hk#rs6+=ymd$4biyom%e9@jw+t6bhpb@qwtji-wk=5&loivo+c"
+
 CORS_ORIGIN_ALLOW_ALL = True
 ALLOWED_HOSTS = ["*"]
 
@@ -199,3 +202,8 @@ VERIFICATION_BASE_URL = "https://locus.com.np/verify/?id="
 
 # CSRF trusted origin
 CSRF_TRUSTED_ORIGINS = ["https://*.locus.com.np", "http://localhost:3000"]
+
+# for security
+if PRODUCTION:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
