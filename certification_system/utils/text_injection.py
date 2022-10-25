@@ -10,6 +10,11 @@ import numpy
 from utils.images import save_temporary_image, delete_temporary_image
 from io import BytesIO
 from django.core.files.base import ContentFile
+
+from rest_framework.exceptions import ValidationError
+
+from rest_framework.views import exception_handler
+
 import uuid
 
 TEXT_PREFIX = "xxx"
@@ -23,12 +28,14 @@ PREFIXES = [TEXT_PREFIX, IMAGE_PREFIX]
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract"
 
-# requires another parameter 'prefixes'(list) text whose position is needed
-def extract_placeholders(img: Image,prefixes) -> dict:
+# requires another parameter ' placeholders_text'(list) text whose position is needed
+def extract_placeholders(img: Image, placeholders_text: list) -> dict:
+    
     """Returns the placeholders present in the certificate template along with their position and lenth per character in pixels
 
     Args:
         img (Image):
+         placeholders_text(list):
 
     Returns:
         dict: keys contain the placeholder text and values (x,y,w) where x,y is the  midpoint of top
@@ -41,7 +48,7 @@ def extract_placeholders(img: Image,prefixes) -> dict:
     placeholders = {}
     for i in range(box_length):
         word = d["text"][i].lower()
-        if any([prefix.lower() in word for prefix in prefixes]):
+        if any([prefix.lower() == word for prefix in  placeholders_text]):
             (x, y, w, h) = (d["left"][i], d["top"][i], d["width"][i], d["height"][i])
             placeholders[word] = (
                 x,
@@ -49,6 +56,14 @@ def extract_placeholders(img: Image,prefixes) -> dict:
                 w,
                 w // len(word),
             )
+            placeholders_text.remove(word)
+        
+    if len(placeholders_text) !=0:
+        error_message = {
+            "placeholders" : placeholders_text,
+            "error" : "could not extract position of 'placeholders' from image",
+        }
+        raise ValidationError(detail=error_message,code="Invalid Plaecholders")
 
     return placeholders
 
@@ -98,13 +113,22 @@ def remove_text_from_image(pil_image, words_to_remove):
         data = pytesseract.image_to_string(ROI, lang="eng", config="--psm 6").lower()
         if data.rstrip().lower() in words_to_remove:
             image[y : y + h, x : x + w] = [255, 255, 255]
-
+            words_to_remove.remove(data.rstrip().lower())
     # cv2.imshow("gray", gray)
     # cv2.imshow("thresh", thresh)
     # cv2.imshow("dilate", dilate)
     # cv2.waitKey(0)
 
+    
+    if len(words_to_remove) !=0:
+        error_message = {
+            "placeholders" : words_to_remove,
+            "error" : "cannot find 'placeholders' in image",
+        }
+        raise ValidationError(detail=error_message,code="Invalid image")
+    
     # convert image from opencv to pil format
+
     return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
 

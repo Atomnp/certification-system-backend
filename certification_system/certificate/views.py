@@ -43,6 +43,9 @@ class BulkCertificateGenerator(APIView):
         template_image = request.FILES["template_image"]
         csv_file = request.FILES["csv_file"]
         mapping_file = request.FILES["mapping"]
+        positioning_method = request.data["positioning_method"] # auto detect , manual 
+        
+
 
         lines = mapping_file.read().decode("utf-8").splitlines()
         MappingType = namedtuple(
@@ -51,7 +54,7 @@ class BulkCertificateGenerator(APIView):
         mapping = [MappingType(*line.split(",")) for line in lines]
 
         prefixes = [m[1] for m in mapping]
-
+        
         # converting csv file to dictionary
 
         file = csv_file.read().decode("utf-8")
@@ -60,7 +63,8 @@ class BulkCertificateGenerator(APIView):
         image = Image.open(template_image)
 
         # extracting placeholders and removing placeholders from image
-        placeholders = extract_placeholders(image,prefixes=prefixes)
+        placeholders = extract_placeholders(image,placeholders_text=prefixes)
+        
         image = remove_text_from_image(image, placeholders.keys())
 
         certificates = []
@@ -115,9 +119,13 @@ class TestTemplate(APIView):
         image = Image.open(template_image)
 
         placeholders = extract_placeholders(image,prefixes=prefixes)
-
+        remove
         print(placeholders)
         return Response(
             data=placeholders,
             status=status.HTTP_201_CREATED,
         )
+
+        
+
+        
