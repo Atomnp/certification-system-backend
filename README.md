@@ -1,3 +1,6 @@
+## CERTIFICATION SYSTEM BACKEND
+This repository contains system for bulk certificate generation and the system to manage certificates for online  verification.
+
 ## Run in development mode
 
 1. Clone the repo
