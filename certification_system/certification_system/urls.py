@@ -3,11 +3,14 @@ from django.urls import include, path
 from rest_framework import routers
 from event.views import EventViewSet
 from category.views import CategoryViewSet
+
 from certificate.views import (
     CertificateViewSet,
     BulkCertificateGenerator,
     EmailSenderView,
+    TestTemplate,
 )
+
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -40,6 +43,7 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/token/blacklist/", BlacklistTokenUpdateView.as_view(), name="blacklist"),
+    path("test-template/", TestTemplate.as_view(), name="test-template"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # urlpatterns = [
 #     path('admin/', admin.site.urls),

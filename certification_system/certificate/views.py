@@ -2,6 +2,7 @@ from certificate.models import Certificate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 import csv
 import io
 from collections import namedtuple
@@ -40,33 +41,71 @@ class CertificateViewSet(viewsets.ModelViewSet):
 
 # route to generate bulk certificates using template image and csv file from the request
 class BulkCertificateGenerator(APIView):
+    """Threre are two positioning methods auto_detect and manual.
+
+    In auto_detect:
+        1. The template image contains the placeholders which are to be replaced with the data from the csv file.
+        2. The placeholders positions are extracted and then placeholders are  removed from the image.
+        3. Mapping file should contain (column_name, placeholder_text,alignment,fontsize)
+
+    In manual:
+        1. The template image does not contain any placeholders.
+        2. The mapping file should contain (column_name, posx, posy,alignment,fontsize)
+    """
+
     def post(self, request, format=None):
         template_image = request.FILES["template_image"]
         csv_file = request.FILES["csv_file"]
         mapping_file = request.FILES["mapping"]
+        positioning_method = request.data["positioning_method"]  # auto detect , manual
 
         lines = mapping_file.read().decode("utf-8").splitlines()
-        MappingType = namedtuple(
+        AutoDetectMappingType = namedtuple(
             "Mapping", "csv_column placeholder alignment font_size"
         )
-        mapping = [MappingType(*line.split(",")) for line in lines]
+        ManualDetectMappingType = namedtuple(
+            "Mapping", "csv_column posx posy alignment font_size"
+        )
+        try:
+            mapping = (
+                [AutoDetectMappingType(*line.split(",")) for line in lines]
+                if positioning_method == "auto_detect"
+                else [ManualDetectMappingType(*line.split(",")) for line in lines]
+            )
+        except Exception:
+            raise ValidationError(
+                "Mapping file should be in te format column_name, placeholder_text,alignment,fontsize"
+            )
+
+        given_placeholders = [m[1] for m in mapping]
 
         # converting csv file to dictionary
-
         file = csv_file.read().decode("utf-8")
         reader = csv.DictReader(io.StringIO(file))
 
-        image = Image.open(template_image)
+        # check if the csv file has the required columns
+        required_fields = ["Name", "Email"]
+        for m in required_fields:
+            if m not in reader.fieldnames:
+                raise ValidationError(
+                    f"CSV file does not contain the column {m.csv_column}"
+                )
 
-        # extracting placeholders and removing placeholders from image
-        placeholders = extract_placeholders(image)
-        image = remove_text_from_image(image, placeholders.keys())
+        image = Image.open(template_image)
+        extracted_placeholders = []
+        if positioning_method == "auto_detect":
+            # extracting placeholders and removing placeholders from image
+            extracted_placeholders = extract_placeholders(
+                image, placeholders_text=given_placeholders
+            )
+
+            image = remove_text_from_image(image, extracted_placeholders.keys())
 
         certificates = []
         for person in reader:
+            from_csv = {k.lower(): person[k] for k in required_fields}
             data = {
-                "name": person["name"],
-                "email": person["email"],
+                **from_csv,
                 "active": True,
                 "category": request.data["category"],
                 "event": request.data["event"],
@@ -74,7 +113,8 @@ class BulkCertificateGenerator(APIView):
                     image=image,
                     person=person,
                     mapping=mapping,
-                    placeholders=placeholders,
+                    placeholders=extracted_placeholders,
+                    positioning_method=positioning_method,
                 ),
             }
 
@@ -132,4 +172,28 @@ class EmailSenderView(APIView):
                 "success_count": success_count,
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class TestTemplate(APIView):
+    def post(self, request, format=None):
+        template_image = request.FILES["template_image"]
+        mapping_file = request.FILES["mapping"]
+
+        lines = mapping_file.read().decode("utf-8").splitlines()
+        MappingType = namedtuple(
+            "Mapping", "csv_column placeholder alignment font_size"
+        )
+        mapping = [MappingType(*line.split(",")) for line in lines]
+
+        prefixes = [m[1] for m in mapping]
+
+        image = Image.open(template_image)
+
+        placeholders = extract_placeholders(image, prefixes=prefixes)
+
+        print(placeholders)
+        return Response(
+            data=placeholders,
+            status=status.HTTP_201_CREATED,
         )
