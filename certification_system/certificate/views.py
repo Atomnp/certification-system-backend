@@ -1,5 +1,6 @@
 from certificate.models import Certificate
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -202,6 +203,8 @@ class TestTemplate(APIView):
 
 # view to directly send html response for social share
 class DetailFromImageId(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, image_id):
         cer = None
         try:
