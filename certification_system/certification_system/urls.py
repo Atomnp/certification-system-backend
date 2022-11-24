@@ -4,11 +4,13 @@ from rest_framework import routers
 from event.views import EventViewSet
 from category.views import CategoryViewSet
 
+
 from certificate.views import (
     CertificateViewSet,
     BulkCertificateGenerator,
     EmailSenderView,
     TestTemplate,
+    DetailFromImageId,
 )
 
 from django.conf.urls.static import static
@@ -44,6 +46,11 @@ urlpatterns = [
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/token/blacklist/", BlacklistTokenUpdateView.as_view(), name="blacklist"),
     path("test-template/", TestTemplate.as_view(), name="test-template"),
+    path(
+        "detail-from-image/<str:image_id>",
+        DetailFromImageId.as_view(),
+        name="detail-from-image",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # urlpatterns = [
 #     path('admin/', admin.site.urls),

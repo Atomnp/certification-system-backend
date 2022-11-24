@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import APIException
 import csv
 import io
 from collections import namedtuple
@@ -72,7 +73,7 @@ class BulkCertificateGenerator(APIView):
                 if positioning_method == "auto_detect"
                 else [ManualDetectMappingType(*line.split(",")) for line in lines]
             )
-        except Exception:
+        except Exception as e:
             raise ValidationError(
                 "Mapping file should be in te format column_name, placeholder_text,alignment,fontsize"
             )
@@ -196,4 +197,22 @@ class TestTemplate(APIView):
         return Response(
             data=placeholders,
             status=status.HTTP_201_CREATED,
+        )
+
+
+# view to directly send html response for social share
+class DetailFromImageId(APIView):
+    def get(self, request, image_id):
+        cer = None
+        try:
+            cer = Certificate.objects.get(image="certificates/" + image_id + ".png")
+        except Exception as e:
+            raise APIException()
+
+        return Response(
+            data={
+                "name": cer.name,
+                "event": cer.event.name,
+                "category": cer.category.name,
+            }
         )
