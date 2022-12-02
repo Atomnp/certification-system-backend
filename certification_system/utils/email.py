@@ -22,8 +22,8 @@ def send_bulk_email(
     fail_count = 0
     success_count = 0
     for certificate in certificates:
-        certificate_id = get_certificate_name(certificate.image.name)
-        print("certificate_id", certificate_id)
+        # certificate_id = get_certificate_name(certificate.image.name)
+        certificate_id = certificate.id
         html_message = render_to_string(
             "email.html",
             {
