@@ -11,6 +11,7 @@ from certificate.views import (
     EmailSenderView,
     TestTemplate,
     DetailFromImageId,
+    RegenerateBulkCertficate,
 )
 
 from django.conf.urls.static import static
@@ -40,6 +41,11 @@ urlpatterns = [
         BulkCertificateGenerator.as_view(),
         name="generate-bulk-certificate",
     ),
+    path(
+        "regenerate-bulk-certificate/",
+        RegenerateBulkCertficate.as_view(),
+        name="regenerate-bulk-certificate",
+    ),
     path("send-email/", EmailSenderView.as_view(), name="send-email"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
@@ -47,7 +53,7 @@ urlpatterns = [
     path("api/token/blacklist/", BlacklistTokenUpdateView.as_view(), name="blacklist"),
     path("test-template/", TestTemplate.as_view(), name="test-template"),
     path(
-        "detail-from-image/<str:image_id>",
+        "detail-from-image/<str:image_id_or_cert_id>",
         DetailFromImageId.as_view(),
         name="detail-from-image",
     ),

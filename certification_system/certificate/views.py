@@ -4,13 +4,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import  NotFound
 import csv
 import io
 from collections import namedtuple
 from event.models import Event
 from category.models import Category
 from utils.email import send_bulk_email
+import os
+from utils.images import save_temporary_image
 
 
 # Create your views here.
@@ -205,17 +207,95 @@ class TestTemplate(APIView):
 class DetailFromImageId(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, image_id):
+    def get(self, request, image_id_or_cert_id):
         cer = None
         try:
-            cer = Certificate.objects.get(image="certificates/" + image_id + ".png")
+            cer = Certificate.objects.get(
+                image="certificates/" + image_id_or_cert_id + ".png"
+            )
         except Exception as e:
-            raise APIException()
+            try:
+                cer = Certificate.objects.get(id=image_id_or_cert_id)
+            except Exception as e:
+                raise NotFound("Certificate not found")
+
+        # if not image_id:
 
         return Response(
             data={
                 "name": cer.name,
                 "event": cer.event.name,
                 "category": cer.category.name,
+                "image": cer.image.url,
             }
+        )
+
+class RegenerateBulkCertficate(APIView):
+    """
+    This view is used to regenerate the certificates for the given event or category,
+    This can be used to change the template for the certificates
+    """
+
+    def post(self, request, format=None):
+        template_image = request.FILES["template_image"]
+        mapping_file = request.FILES["mapping"]
+        positioning_method = request.data["positioning_method"]  # auto detect , manual
+
+        lines = mapping_file.read().decode("utf-8").splitlines()
+        AutoDetectMappingType = namedtuple(
+            "Mapping", "csv_column placeholder alignment font_size"
+        )
+        ManualDetectMappingType = namedtuple(
+            "Mapping", "csv_column posx posy alignment font_size"
+        )
+        try:
+            mapping = (
+                [AutoDetectMappingType(*line.split(",")) for line in lines]
+                if positioning_method == "auto_detect"
+                else [ManualDetectMappingType(*line.split(",")) for line in lines]
+            )
+        except Exception as e:
+            raise ValidationError(
+                "Mapping file should be in te format column_name, placeholder_text,alignment,fontsize"
+            )
+
+        given_placeholders = [m[1] for m in mapping]
+
+        image = Image.open(template_image)
+        extracted_placeholders = []
+        if positioning_method == "auto_detect":
+            # extracting placeholders and removing placeholders from image
+            extracted_placeholders = extract_placeholders(
+                image, placeholders_text=given_placeholders
+            )
+
+            image = remove_text_from_image(image, extracted_placeholders.keys())
+
+        certificates = Certificate.objects.filter(category=request.data["category"])
+        updated_certs = []
+        for certificate in certificates:
+            person = {
+                "Name": certificate.name,
+                "Email": certificate.email,
+            }
+            new_cert = generate_certificate(
+                image=image,
+                person=person,
+                mapping=mapping,
+                placeholders=extracted_placeholders,
+                positioning_method=positioning_method,
+            )
+            old_image = certificate.image.path
+            try:
+                os.unlink(old_image)
+            except:
+                pass
+            save_temporary_image(new_cert, certificate.image.path)
+
+            updated_certs.append(
+                CertificateSerializer(certificate, context={"request": request}).data
+            )
+        return Response(
+            data=updated_certs,
+            status=status.HTTP_201_CREATED,
         )

@@ -20,7 +20,7 @@ def get_file_path(instance, filename):
     return os.path.join("certificates", filename)
 
 
-def save_temporary_image(file_obj):
+def save_temporary_image(file_obj, filename=None):
     """Saves django image in the media folder
 
     Args:
@@ -29,7 +29,8 @@ def save_temporary_image(file_obj):
     Returns:
         str: Path of the image from the directory containing manage.py
     """
-    filename = str(uuid.uuid4()) + ".png"
+    if filename is None:
+        filename = str(uuid.uuid4()) + ".png"
     with default_storage.open(filename, "wb+") as destination:
         for chunk in file_obj.chunks():
             destination.write(chunk)
