@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from rest_framework.exceptions import  NotFound
+from rest_framework.exceptions import NotFound
 import csv
 import io
 from collections import namedtuple
@@ -230,6 +230,7 @@ class DetailFromImageId(APIView):
             }
         )
 
+
 class RegenerateBulkCertficate(APIView):
     """
     This view is used to regenerate the certificates for the given event or category,
@@ -296,6 +297,9 @@ class RegenerateBulkCertficate(APIView):
                 CertificateSerializer(certificate, context={"request": request}).data
             )
         return Response(
-            data=updated_certs,
+            data={
+                "message": f" {len(updated_certs)} Certificates regenerated successfully",
+                "data": updated_certs,
+            },
             status=status.HTTP_201_CREATED,
         )
