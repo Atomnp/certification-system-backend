@@ -12,6 +12,7 @@ from certificate.views import (
     TestTemplate,
     DetailFromImageId,
     RegenerateBulkCertficate,
+    CertificateCSVExportView,
 )
 
 from django.conf.urls.static import static
@@ -57,6 +58,9 @@ urlpatterns = [
         DetailFromImageId.as_view(),
         name="detail-from-image",
     ),
+    path("export/", CertificateCSVExportView.as_view(), name="export"),
+    path("export/<int:event_id>/", CertificateCSVExportView.as_view(), name="export-event"),
+    path("export/<int:event_id>/<int:category_id>/", CertificateCSVExportView.as_view(), name="export-category")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # urlpatterns = [
 #     path('admin/', admin.site.urls),
