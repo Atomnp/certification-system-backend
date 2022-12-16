@@ -13,7 +13,8 @@ from category.models import Category
 from utils.email import send_bulk_email
 import os
 from utils.images import save_temporary_image
-
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 from rest_framework import viewsets
@@ -303,3 +304,51 @@ class RegenerateBulkCertficate(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+class CertificateCSVExportView(APIView):
+    def get(self, request, event_id =  None, category_id = None):
+        certificates = Certificate.objects.all()
+        filename="all"
+        if event_id:
+            event = get_object_or_404(Event, id=event_id)
+            certificates = certificates.filter(event__id=event_id)
+            filename = event.name
+        if category_id:
+            category = get_object_or_404(Category, id=category_id, event__id=event_id)
+            certificates = certificates.filter(category__id=category_id)
+            filename = f'{category.name}_{event.name}'
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename={filename}.csv"
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Certificate ID",
+                "Name",
+                "Email",
+                "Email Sent"
+                "Event",
+                "Event ID",
+                "Category",
+                "Category ID",
+                "Image URL",
+                "Created At",
+                "Updated At"
+            ]
+        )
+        for certificate in certificates:
+            writer.writerow(
+                [
+                    certificate.id,
+                    certificate.name,
+                    certificate.email,
+                    certificate.email_sent,
+                    certificate.event.name,
+                    certificate.event.id,
+                    certificate.category.name,
+                    certificate.category.id,
+                    certificate.image.url,
+                    certificate.created_at,
+                    certificate.updated_at,
+                ]
+            )
+        return response
