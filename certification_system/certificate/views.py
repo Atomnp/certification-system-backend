@@ -14,7 +14,7 @@ from utils.email import send_bulk_email
 import os
 from utils.images import save_temporary_image
 from django.http import HttpResponse
-
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 from rest_framework import viewsets
@@ -310,11 +310,11 @@ class CertificateCSVExportView(APIView):
         certificates = Certificate.objects.all()
         filename="all"
         if event_id:
-            event = Event.objects.get(id=event_id)
+            event = get_object_or_404(Event, id=event_id)
             certificates = certificates.filter(event__id=event_id)
             filename = event.name
         if category_id:
-            category = Category.objects.get(id=category_id)
+            category = get_object_or_404(Category, id=category_id, event__id=event_id)
             certificates = certificates.filter(category__id=category_id)
             filename = f'{category.name}_{event.name}'
         response = HttpResponse(content_type="text/csv")
