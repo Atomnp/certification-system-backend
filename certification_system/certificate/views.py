@@ -77,8 +77,14 @@ class BulkCertificateGenerator(APIView):
                 else [ManualDetectMappingType(*line.split(",")) for line in lines]
             )
         except Exception as e:
-            raise ValidationError(
-                "Mapping file should be in te format column_name, placeholder_text,alignment,fontsize"
+            # raise ValidationError(
+            #     "Mapping file should be in te format column_name, placeholder_text,alignment,fontsize"
+            # )
+            return Response(
+                {
+                    "message": "Mapping file should be in te format column_name, placeholder_text,alignment,fontsize"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         given_placeholders = [m[1] for m in mapping]
@@ -91,8 +97,10 @@ class BulkCertificateGenerator(APIView):
         required_fields = ["Name", "Email"]
         for m in required_fields:
             if m not in reader.fieldnames:
-                raise ValidationError(
-                    f"CSV file does not contain the column {m.csv_column}"
+                # send 400 response
+                return Response(
+                    {"message": f"CSV file should contain {m} column"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
         image = Image.open(template_image)
